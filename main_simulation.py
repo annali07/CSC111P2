@@ -17,32 +17,76 @@ please consult our Course Syllabus.
 
 This file is Copyright (c) 2024 CSC111 Teaching Team
 """
-import sys, pygame
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import networkx as nx
+import numpy as np
+import random
+from person import Person
+from virus import Virus
+from policy import Policy
 
-def simulate_spread(days, initial_infected_count):
-    """Main simulation method
+# Adjust as needed
+population_size = 500
+initial_infected_count = 10
+simulation_days = 50
+
+# Initialize the virus and policy based on the provided attributes
+virus = Virus(incubation_period=5, infection_rate=0.3, death_rate=0.02, recovery_days=7)
+policy = Policy(isolate_infected=False, clear_neighbors=False)
+
+
+class Simulation:
+    """ Main part for the simulation of virus spread.
     """
-    # Initialize virus, people, and graph
-    virus = Virus(incubation_period=5, infection_rate=0.3, death_rate=0.02)
-    policy = Policy(isolate_infected=True, clear_neighbors=False)
-    population_graph = Graph()
+    population_size: int
+    initial_infected_count: int
+    persons: {int: Person}
 
-    # Add people and connections
-    for i in range(100):
-        population_graph.add_person(i, Person())
+    def __init__(self, population_size: int, initial_infected_count: int) -> None:
+        self.population_size = population_size
+        self.G = nx.Graph()
+        self.persons = {i: Person() for i in range(population_size)}
+        self.initial_infected(initial_infected_count)
+        self.create_connections()
 
-    # # Randomly infect initial set of people
-    # initial_infected = random.sample(population_graph.vertices.keys(), initial_infected_count)
-    # for person_id in initial_infected:
-    #     population_graph.vertices[person_id].status = "incubation"
-    #
-    # Main simulation loop
-    for day in range(days):
-        population_graph.spread_virus()
-        population_graph.apply_policy(policy)
-        # todo
-        time.sleep(1)  # Simulate one day per second
+    def initial_infected(self, initial_infected_count: int) -> None:
+        """ Method to set the initial infected people
+        """
+        infected_ids = random.sample(list(self.persons.keys()), initial_infected_count)
+        for i in infected_ids:
+            self.persons[i].status = "incubation"
+
+    def create_connections(self) -> None:
+        """ Method to creating the connections within the population
+        """
+        pass
+
+    def spread_virus(self) -> None:
+        """ Method for
+        """
+        for person in self.persons:
+            if person.status in ["incubation", "infected"]:
+                for connected_person in person.connections:
+                    if connected_person.status == "uninfected" and random.random() < virus.infection_rate:
+                        connected_person.status = "incubation"
+
+    def update_status(self) -> None:
+        """ Update status
+        """
+        for person in self.persons:
+            person.update_status(virus)
+
+    def apply_policy(self) -> None:
+        """ Implementation for isolation policy
+        """
+        pass
+
+    def draw(self) -> None:
+        """ Draw or update the graph visualization for the current day
+        """
+        pass
 
 
 if __name__ == "__main__":
-    simulate_spread(days=45, initial_infected_count=5)
+    sim = Simulation(population_size, initial_infected_count)
