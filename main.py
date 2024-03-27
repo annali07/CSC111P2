@@ -11,7 +11,7 @@ pygame.init()
 font = pygame.font.Font(None, 36) 
 
 WHITE = (255, 255, 255)
-BLUE = (0, 120, 255)
+BLUE = (148, 135, 199)
 BLACK = (0, 0, 0)
 
 class InputBox:
@@ -53,10 +53,12 @@ def create_initial_window():
     screen = pygame.display.set_mode((screen_width, screen_height))
 
     font = pygame.font.Font(None, 36)
-    button_color = (0, 120, 255)
+    button_color = (148, 135, 199)
     button_position = (325, 350)
     button_size = (150, 60)
     button_text = 'Generate'
+    text_surf = font.render(button_text, True, WHITE)
+    text_rect = text_surf.get_rect()
 
     input_box = InputBox(300, 250, 140, 32, font)
     input_text = ''
@@ -90,8 +92,10 @@ def create_initial_window():
         screen.fill(WHITE)
         input_box.draw(screen)
         pygame.draw.rect(screen, button_color, (*button_position, *button_size))
-        text_surf = font.render(button_text, True, WHITE)
-        screen.blit(text_surf, (button_position[0] + 10, button_position[1] + 20))
+        center_x = button_position[0] + (button_size[0] - text_rect.width) // 2
+        center_y = button_position[1] + (button_size[1] - text_rect.height) // 2
+        screen.blit(text_surf, (center_x, center_y))
+        
         screen.blit(output, (slider_x + (slider_width // 2) - (output.get_width() // 2) + slider_width/2 + 25, slider_height - 7))
         pygame_widgets.update(events)
         pygame.display.flip()
@@ -99,7 +103,6 @@ def create_initial_window():
     pygame.quit()
     slider_value = slider.getValue() 
     return {"txt": input_text, "value": slider_value}
-
 
 # init
 dt = create_initial_window() # dt is a dict
