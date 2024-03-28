@@ -130,7 +130,7 @@ class Simulation:
     """
     population_size: int
     initial_infected_count: int
-    persons: {int: Person}
+    persons: dict[int, Person]
 
     def __init__(self, population_size: int, initial_infected_count: int, virus: Virus, policy: Policy) -> None:
         self.population_size = population_size
