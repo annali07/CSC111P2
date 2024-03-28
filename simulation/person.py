@@ -1,11 +1,12 @@
-from virus import Virus
-from policy import Policy
+from __future__ import annotations
+import virus
+import policy
 
 
 class Person:
     """ Person Class
     """
-    relationship: set[person]
+    relationship: set[Person]
     status: str     # uninfected/incubation/infected/dead/recovered
     days_infected: int
 

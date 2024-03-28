@@ -1,5 +1,5 @@
-from person import Person
-from virus import Virus
+import person
+import virus
 
 
 class Policy:
