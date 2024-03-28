@@ -6,7 +6,6 @@ import pygame_widgets
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
 
-
 pygame.init()
 font = pygame.font.Font(None, 36) 
 
@@ -66,7 +65,7 @@ def create_initial_window():
     slider_width = 300
     slider_height = 200
     slider_x = (screen_width - slider_width) // 2
-    slider = Slider(screen, slider_x, slider_height, slider_width, 10, min=1, max=10, step=1)
+    slider = Slider(screen, slider_x, slider_height, slider_width, 10, min=1, max=20, step=2)
     output = TextBox(screen, 560, 195, 25, 25, fontSize=25)
     output.disable()
 
