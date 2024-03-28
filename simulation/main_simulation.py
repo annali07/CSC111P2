@@ -18,6 +18,7 @@ please consult our Course Syllabus.
 This file is Copyright (c) 2024 CSC111 Teaching Team
 """
 import pygame
+import pygame_widgets
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.button import Button
@@ -130,7 +131,7 @@ class Simulation:
     """
     population_size: int
     initial_infected_count: int
-    persons: {int: Person}
+    persons: dict[int, Person]
 
     def __init__(self, population_size: int, initial_infected_count: int, virus: Virus, policy: Policy) -> None:
         self.population_size = population_size
@@ -200,13 +201,24 @@ while running:
 
     screen.fill(WHITE)
 
+    initial_infected_count_output = str(initial_infected_count_slider.getValue())
+    infection_rate_output = str(round(infection_rate_slider.getValue(), 2))
+    incubation_period_output = str(incubation_period_slider.getValue())
+    death_rate_output = str(round(death_rate_slider.getValue(), 2))
+    recovery_days_output = str(recovery_days_slider.getValue())
+
     # Draw labels for sliders and buttons
     draw_text('Population Size:', (50, 105), font)
     draw_text('Initial Infected Count:', (50, 155), font)
+    draw_text(initial_infected_count_output, (640, 155), font)
     draw_text('Infection Rate:', (50, 205), font)
+    draw_text(infection_rate_output, (640, 205), font)
     draw_text('Incubation Period:', (50, 255), font)
+    draw_text(incubation_period_output, (640, 255), font)
     draw_text('Death Rate:', (50, 305), font)
+    draw_text(death_rate_output, (640, 305), font)
     draw_text('Recovery Days:', (50, 355), font)
+    draw_text(recovery_days_output, (640, 355), font)
     draw_text('Isolate Infected:', (50, 405), font)
     draw_text('Clear Neighbors:', (50, 455), font)
 
@@ -228,6 +240,6 @@ while running:
     clear_neighbors_btn.draw()
     start_simulation_button.listen(events)
     start_simulation_button.draw()
-
+    pygame_widgets.update(events)
     pygame.display.flip()
     clock.tick(30)
