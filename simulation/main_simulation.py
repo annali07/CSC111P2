@@ -179,67 +179,77 @@ def draw_text(text, position, font, color=BLACK):
     text_surface = font.render(text, True, color)
     screen.blit(text_surface, position)
 
-
-running = True
-while running:
-    events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:
-            running = False
-            pygame.quit()
-            sys.exit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = event.pos
-            print(f"Clicked at: {mouse_pos}")
-            if 303 <= mouse_pos[0] <= 548 and 521 <= mouse_pos[1] <= 568:
-                fetch_parameters()
+def test():
+    running = True
+    while running:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                print(f"Clicked at: {mouse_pos}")
+                if 303 <= mouse_pos[0] <= 548 and 521 <= mouse_pos[1] <= 568:
+                    fetch_parameters()
+                    running = False
+                    pygame.quit()
+                    sys.exit()
 
-        population_size_box.handle_event(event)
+            population_size_box.handle_event(event)
 
-    screen.fill(WHITE)
+        screen.fill(WHITE)
 
-    initial_infected_count_output = str(initial_infected_count_slider.getValue())
-    infection_rate_output = str(round(infection_rate_slider.getValue(), 2))
-    incubation_period_output = str(incubation_period_slider.getValue())
-    death_rate_output = str(round(death_rate_slider.getValue(), 2))
-    recovery_days_output = str(recovery_days_slider.getValue())
+        initial_infected_count_output = str(initial_infected_count_slider.getValue())
+        infection_rate_output = str(round(infection_rate_slider.getValue(), 2))
+        incubation_period_output = str(incubation_period_slider.getValue())
+        death_rate_output = str(round(death_rate_slider.getValue(), 2))
+        recovery_days_output = str(recovery_days_slider.getValue())
 
-    # Draw labels for sliders and buttons
-    draw_text('Population Size:', (50, 105), font)
-    draw_text('Initial Infected Count:', (50, 155), font)
-    draw_text(initial_infected_count_output, (640, 155), font)
-    draw_text('Infection Rate:', (50, 205), font)
-    draw_text(infection_rate_output, (640, 205), font)
-    draw_text('Incubation Period:', (50, 255), font)
-    draw_text(incubation_period_output, (640, 255), font)
-    draw_text('Death Rate:', (50, 305), font)
-    draw_text(death_rate_output, (640, 305), font)
-    draw_text('Recovery Days:', (50, 355), font)
-    draw_text(recovery_days_output, (640, 355), font)
-    draw_text('Isolate Infected:', (50, 405), font)
-    draw_text('Clear Neighbors:', (50, 455), font)
+        # Draw labels for sliders and buttons
+        draw_text('Population Size:', (50, 105), font)
+        draw_text('Initial Infected Count:', (50, 155), font)
+        draw_text(initial_infected_count_output, (640, 155), font)
+        draw_text('Infection Rate:', (50, 205), font)
+        draw_text(infection_rate_output, (640, 205), font)
+        draw_text('Incubation Period:', (50, 255), font)
+        draw_text(incubation_period_output, (640, 255), font)
+        draw_text('Death Rate:', (50, 305), font)
+        draw_text(death_rate_output, (640, 305), font)
+        draw_text('Recovery Days:', (50, 355), font)
+        draw_text(recovery_days_output, (640, 355), font)
+        draw_text('Isolate Infected:', (50, 405), font)
+        draw_text('Clear Neighbors:', (50, 455), font)
 
-    # Draw and update all UI elements
-    population_size_box.draw(screen)
-    initial_infected_count_slider.listen(events)
-    initial_infected_count_slider.draw()
-    infection_rate_slider.listen(events)
-    infection_rate_slider.draw()
-    incubation_period_slider.listen(events)
-    incubation_period_slider.draw()
-    death_rate_slider.listen(events)
-    death_rate_slider.draw()
-    recovery_days_slider.listen(events)
-    recovery_days_slider.draw()
-    isolate_infected_btn.listen(events)
-    isolate_infected_btn.draw()
-    clear_neighbors_btn.listen(events)
-    clear_neighbors_btn.draw()
-    start_simulation_button.listen(events)
-    start_simulation_button.draw()
-    pygame_widgets.update(events)
-    pygame.display.flip()
-    clock.tick(30)
+        # Draw and update all UI elements
+        population_size_box.draw(screen)
+        initial_infected_count_slider.listen(events)
+        initial_infected_count_slider.draw()
+        infection_rate_slider.listen(events)
+        infection_rate_slider.draw()
+        incubation_period_slider.listen(events)
+        incubation_period_slider.draw()
+        death_rate_slider.listen(events)
+        death_rate_slider.draw()
+        recovery_days_slider.listen(events)
+        recovery_days_slider.draw()
+        isolate_infected_btn.listen(events)
+        isolate_infected_btn.draw()
+        clear_neighbors_btn.listen(events)
+        clear_neighbors_btn.draw()
+        start_simulation_button.listen(events)
+        start_simulation_button.draw()
+        pygame_widgets.update(events)
+        pygame.display.flip()
+        clock.tick(30)
+
+if __name__ == "__main__":
+
+    import python_ta
+    python_ta.check_all(config={
+        'extra-imports': [],  # the names (strs) of imported modules
+        'allowed-io': [],     # the names (strs) of functions that call print/open/input
+        'max-line-length': 120
+    })
+    test()
