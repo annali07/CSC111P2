@@ -1,6 +1,7 @@
 from __future__ import annotations
 import virus
 import policy
+import random
 
 
 class Person:
@@ -22,7 +23,7 @@ class Person:
             self.relationship.append(other_person)
             other_person.relationship.append(self)
 
-    def update_status(self, virus: Virus) -> None:
+    def update_status(self, virus: virus.Virus) -> None:
         """The method for updating the status of individuals based on the current status and other variables
         """
         if self.status == "incubation":
