@@ -1,4 +1,3 @@
-
 from networkx_graph import generate_graph
 import pygame
 import sys
@@ -14,14 +13,14 @@ BLUE = (148, 135, 199)
 BLACK = (0, 0, 0)
 
 class InputBox:
-    def __init__(self, x, y, w, h, font, text=''):
+    def __init__(self, x, y, w, h, font, text='') -> None:
         self.rect = pygame.Rect(x, y, w, h)
         self.color = BLACK
         self.text = text
         self.txt_surface = font.render(text, True, self.color)
         self.active = False
 
-    def handle_event(self, event):
+    def handle_event(self, event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = not self.active
@@ -38,15 +37,15 @@ class InputBox:
                     self.text += event.unicode
                 self.txt_surface = font.render(self.text, True, self.color)
 
-    def update(self):
+    def update(self) -> None:
         width = max(200, self.txt_surface.get_width()+10)
         self.rect.w = width
 
-    def draw(self, screen):
+    def draw(self, screen) -> None:
         screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
-def create_initial_window():
+def create_initial_window() -> dict[str, int]:
     screen_width = 800
     screen_height = 600
     screen = pygame.display.set_mode((screen_width, screen_height))
@@ -100,8 +99,8 @@ def create_initial_window():
         pygame.display.flip()
 
     pygame.quit()
-    slider_value = slider.getValue() 
-    return {"txt": input_text, "value": slider_value}
+    slider_value = int(slider.getValue() )
+    return {"txt": int(input_text), "value": slider_value}
 
 # init
 dt = create_initial_window() # dt is a dict

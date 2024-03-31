@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 # edge_list = [(1, 2), (2, 3), (3, 4), (1, 4)]
 
-def generate_graph(dt: dict) -> None:
+def generate_graph(dt: dict, pause: float = .35) -> None:
     num_nodes = int(dt['txt'])
     num_color = int(dt['value'])
     G = nx.Graph() # generate different real-world model graphs
@@ -38,7 +38,7 @@ def generate_graph(dt: dict) -> None:
 
         # Update node colors
         node_colors = {node: 'red' if node in [i, i + 1] else 'blue' for node in G.nodes()}
-        random_nodes = random.sample(range(1,  num_nodes), num_color)
+        random_nodes = random.sample(range(1, num_nodes), num_color)
         for node in random_nodes:
             node_colors[node] = random.choice(['red', 'blue'])
         # node_colors = ['red' if node in [i, i + 1] else 'blue' for node in G.nodes()]
@@ -53,7 +53,7 @@ def generate_graph(dt: dict) -> None:
 
         # Draw and pause
         plt.draw()
-        plt.pause(0.1)
+        plt.pause(pause)
 
     # Keep the window open after the loop
     plt.ioff()
