@@ -257,7 +257,8 @@ class VirusSimulationApp:
                             if self.population_size_box.text.isdigit() else 500
                         self.run_simulation()  # Fetch simulation parameters from the UI
                         pygame.quit()
-                        sys.exit()
+                        running = False
+                        break
 
                     # Check if the click is within the bounds of the 'Change Network Typology' button
                     elif 327 <= mouse_pos[0] <= 524 and 450 <= mouse_pos[1] <= 486:
@@ -265,6 +266,9 @@ class VirusSimulationApp:
                         self.toggle_network_typology()
 
                 self.population_size_box.handle_event(event)
+
+            if not running:
+                break
 
             # Clear the screen with a white background
             self.screen.fill(self.WHITE)
@@ -313,6 +317,9 @@ class VirusSimulationApp:
             self.clock.tick(30)
 
         pygame.quit()
+
+    def get_parameters(self) -> dict:
+        return self.parameters
 
 
 class Simulation:
@@ -375,14 +382,24 @@ class Simulation:
         pass
 
 
+
 if __name__ == "__main__":
 
     import python_ta
-    python_ta.check_all(config={
-        'max-line-length': 120,
-        'extra-imports': [],  # the names (strs) of imported modules
-        'allowed-io': [],     # the names (strs) of functions that call print/open/input
-    })
+    check_python_ta = False
+    if check_python_ta:
+        python_ta.check_all(config={
+            'max-line-length': 120,
+            'extra-imports': ["pygame", "pygame_widgets", "sys"
+                            "matplotlib", "numpy", "networkx"
+                            "pygame_widgets.slider", "pygame_widgets.textbox"
+                            "pygame_widgets.button", ],  # the names (strs) of imported modules
+            'allowed-io': [],     # the names (strs) of functions that call print/open/input
+            # 'disabled': ["E9999"]
+        })
 
     app = VirusSimulationApp()
     app.main_game_loop()
+    parameters = app.get_parameters()
+    print(parameters)
+    print("Y")

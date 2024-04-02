@@ -22,7 +22,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 import numpy as np
-from simulation.main_simulation import Simulation, Person, Virus, Policy
+from simulation import Simulation, Person, Virus, Policy
 
 numberType = int | float
 
