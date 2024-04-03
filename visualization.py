@@ -147,7 +147,6 @@ def initialize_edges(graph: nx.Graph, contact_density: int, isolation_force: flo
         num_new_edges = min(num - graph.degree(u), len(potential_connections))
 
         if num_new_edges > 0:
-            # print(num_new_edges)
             n_edges = random.sample(potential_connections, num_new_edges)
 
             for node in n_edges:
@@ -217,8 +216,6 @@ def update_day(graph: nx.Graph, infection_rate: float, death_rate: float, recove
     graph.remove_edges_from(edges)
 
     new_edges = []
-    max_num = 0
-
     for u in graph.nodes():
         if graph.nodes[u]['status'] == 'dead':
             continue
@@ -234,9 +231,6 @@ def update_day(graph: nx.Graph, infection_rate: float, death_rate: float, recove
         num_new_edges = min(num - graph.degree(u), len(potential_connections))
 
         if num_new_edges > 0:
-            if num_new_edges > max_num:
-                max_num = num_new_edges
-                print(num_new_edges)
             n_edges = random.sample(potential_connections, num_new_edges)
             print(potential_connections)
             for node in n_edges:
