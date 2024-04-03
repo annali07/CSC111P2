@@ -26,7 +26,22 @@ data obtained from the interface, including:
         10. pause (time between each day)
         11. total_days
 
-    five colors: green (healthy), red (infected), blue (recorved), black (dead), purple (infected, but not detected)
+    Colors: green (healthy), red (infected), blue (recorved), black (dead), purple (infected, but not detected)
+    Question:
+        1. what is the significance of blue nodes? 
+        2. what is the probability of triggering incubation period?
+    
+    attributes = [
+        ["Attribute", "Description", "Possible Values"],
+        ["status", "Indicates the health status of a person.", "'healthy', 'infected', 'recovered', 'dead', 'incubated'"],
+        ["days_infected", "Tracks how many days a node has been infected.", "Integer values starting from 0"],
+        ["node_color", "Used for visualization, indicates the health status of a person by color.", "'green', 'red', 'blue', 'black', 'purple'"],
+        ["family", "Indicates the family group of a person. Nodes within the same family have closer connections.", "Integer values, -1 for no family"]
+    ]
+
+    isolation foce affects family by lowering infection rate, affects others by reducing added edge? 
+    too little edge added? unreasonable? 
+
 """
 
 import networkx as nx
@@ -121,7 +136,7 @@ def initialize_edges(graph: nx.Graph, contact_density: int) -> None:
     return edges
 
 
-def update_day(graph: nx.Graph, infection_rate: float, edges: list) -> None:
+def update_day(graph: nx.Graph, infection_rate: float, death_rate: float, recovery_days: int, contact_density: int, isolation_force: int, incubation_period: int, edges: list) -> None:
     """
     Update the graph based on the current day
     
@@ -130,22 +145,57 @@ def update_day(graph: nx.Graph, infection_rate: float, edges: list) -> None:
     2. Reorder the contacting edges
     
     """
-    for u, v in edges:
-        if graph.nodes[u]['status'] == 'infected':
-            if graph.nodes[v]['status'] != 'infected':
-                rand = random.random()
-                print(rand, infection_rate)                
-                if rand < infection_rate:
-                    graph.nodes[v]['status'] = 'infected'
-                    graph.nodes[v]['node_color'] = 'red'  
-
-        elif graph.nodes[v]['status'] == 'infected':
-            if graph.nodes[u]['status'] != 'infected':
-                if random.random() < infection_rate:
-                    graph.nodes[u]['status'] = 'infected'
-                    graph.nodes[u]['node_color'] = 'red'
+    all_edges = list(graph.edges())
+    # if isolation_force < 5:
+    #     contact_density = contact_density // isolation_force
+    # else:
+    #     all_edges = edges
     
+    for u, v in all_edges:
+        if graph.nodes[u]['status'] == 'infected' or graph.nodes[u]['status'] == 'incubated':
+            if graph.nodes[v]['status'] != 'infected' and graph.nodes[v]['status'] != 'dead':          
+                if random.random() < infection_rate:
+                    if random.random() < 0.5:
+                        graph.nodes[v]['status'] = 'incubated'
+                        graph.nodes[v]['node_color'] = 'purple'
+                        graph.nodes[v]['days_infected'] = 0
+                    else:
+                        graph.nodes[v]['status'] = 'infected'
+                        graph.nodes[v]['node_color'] = 'red' 
+                        graph.nodes[v]['days_infected'] = 0
 
+        elif graph.nodes[v]['status'] == 'infected' or graph.nodes[v]['status'] == 'incubated':
+            if graph.nodes[u]['status'] != 'infected' and graph.nodes[u]['status'] != 'dead':
+                if random.random() < infection_rate:
+                    if random.random() < 0.5:
+                        graph.nodes[u]['status'] = 'incubated'
+                        graph.nodes[u]['node_color'] = 'purple'
+                        graph.nodes[u]['days_infected'] = 0
+                    else:
+                        graph.nodes[u]['status'] = 'infected'
+                        graph.nodes[u]['node_color'] = 'red'
+                        graph.nodes[u]['days_infected'] = 0
+
+    infected_nodes = [node for node, attrs in graph.nodes(data=True) if attrs.get('status') == 'infected']
+    for node in infected_nodes:
+        if graph.nodes[node]['days_infected'] >= recovery_days:
+            if random.random() < death_rate:
+                graph.nodes[node]['status'] = 'dead'
+                graph.nodes[node]['node_color'] = 'black'
+            else:
+                graph.nodes[node]['status'] = 'recovered'
+                graph.nodes[node]['node_color'] = 'blue'
+        else:
+            graph.nodes[node]['days_infected'] += 1
+
+    incubated_nodes = [node for node, attrs in graph.nodes(data=True) if attrs.get('status') == 'incubated']
+    for node in incubated_nodes:
+        if graph.nodes[node]['days_infected'] >= incubation_period:
+            graph.nodes[node]['status'] = 'infected'
+            graph.nodes[node]['node_color'] = 'red'
+            graph.nodes[node]['days_infected'] = 0
+        else:
+            graph.nodes[node]['days_infected'] += 1
 
 
     graph.remove_edges_from(edges)
@@ -153,9 +203,10 @@ def update_day(graph: nx.Graph, infection_rate: float, edges: list) -> None:
     potential_new_edges = [(u, v) for u in graph.nodes() for v in graph.nodes() if \
 (u != v and graph.nodes[u]['family'] != graph.nodes[v]['family']) or (graph.nodes[u]['family'] == -1 or graph.nodes[v]['family'] == -1)]
     
-    new_edges = random.sample(potential_new_edges, 10)
+    new_edges = random.sample(potential_new_edges, contact_density)
     for u, v in new_edges:
-        if u != v:
+        if u != v and graph.nodes[u]['status'] != 'dead' and graph.nodes[v]['status'] != 'dead' and not graph.has_edge(u, v)\
+and graph.nodes[u]['status'] != 'infected' and graph.nodes[v]['status'] != 'infected':
             graph.add_edge(u, v, edge_color='black')
     
     return new_edges
@@ -198,7 +249,7 @@ def generate_graph(
     num_nodes = graph.number_of_nodes()
 
     plt.ion()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(15, 10))
 
     # Initialize family members
     initialize_family(graph, num_nodes, house_density)
@@ -214,7 +265,7 @@ def generate_graph(
         # Redefine ax to ensure it's correctly linked to the current figure
         ax = fig.add_subplot(111)
         
-        edges = update_day(graph, infection_rate, edges)
+        edges = update_day(graph, infection_rate, death_rate, recovery_days,contact_density, isolate_force, incubation_period, edges)
 
         node_colors = [graph.nodes[node]['node_color'] for node in graph.nodes()]
         edge_colors = [graph.edges[edge]['edge_color'] for edge in graph.edges()]
@@ -222,10 +273,14 @@ def generate_graph(
                 with_labels=False, ax=ax, node_size=10, edge_color=edge_colors)
         
         infected = sum([1 for node in graph.nodes() if graph.nodes[node]['status'] == 'infected'])
+        dead = sum([1 for node in graph.nodes() if graph.nodes[node]['status'] == 'dead'])
+
         # Set the title and subtitle
         fig.suptitle('Virus Infection', ha='center')
-        ax.set_title(f'The {day}th Day', fontsize=10, ha='center', x=1.0)
-        ax.set_title(f'Infected: {infected} / {population_size}', fontsize=10, ha='center', x=0.5)
+
+        fig.text(0.5, 0.94, f'The {day}th Day', ha='center', va='center', fontsize=10)  # Subtitle below main title
+        fig.text(0.5, 0.9, f'Infected: {infected} / {population_size - dead}', ha='center', va='center', fontsize=10)  # Second subtitle below the first subtitle
+
 
 
         # Draw and pause
