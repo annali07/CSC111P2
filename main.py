@@ -1,6 +1,8 @@
 """
 CSC111 Project 2: Virus Spread Simulation
 
+Lowest population = 10
+
 """
 import pygame
 import pygame_widgets
@@ -14,7 +16,7 @@ import networkx as nx
 import numpy as np
 import random
 from simulation import Virus, Person, Policy
-
+from visualization import generate_graph
 
 class InputBox:
     """
@@ -81,7 +83,7 @@ class VirusSimulationApp:
     font: pygame.font.Font
     WHITE: tuple[int, int, int]
     BUTTON_COLOR: tuple[int, int, int]
-    network_typology_status: str
+    house_density: str
     parameters: dict[str, any]
 
     def __init__(self) -> None:
@@ -92,7 +94,7 @@ class VirusSimulationApp:
         self.font = pygame.font.Font(None, 30)
         self.WHITE = (255, 255, 255)
         self.BUTTON_COLOR = (0, 120, 150)
-        self.network_typology_status = "SMALL-WORLD"
+        self.house_density = "MEDIUM"
         self.parameters = self.default_parameters()
         self.setup_ui_elements()
 
@@ -111,7 +113,8 @@ class VirusSimulationApp:
             'recovery_days': 7,
             'population_size': 500,
             'isolate_force': 0.0,
-            'network_typology': self.network_typology_status
+            'house_density': self.house_density,
+            'contact_density': 5
         }
 
     def setup_ui_elements(self):
@@ -132,7 +135,7 @@ class VirusSimulationApp:
         # Button for changing network topology
         # Allows users to cycle through network topology types( SMALL-WORLD / RANDOM / SCALE-FREE ).
         self.network_typology_btn = Button(self.screen, slider_start_x, 448, 200, 40,
-                                           text=f'{self.network_typology_status}', fontSize=22, margin=20,
+                                           text=f'{self.house_density}', fontSize=22, margin=20,
                                            inactiveColour=self.BUTTON_COLOR, pressedColour=(0, 180, 180), radius=20)
 
         # Sliders for simulation parameters
@@ -149,10 +152,13 @@ class VirusSimulationApp:
                                            300, 10, min=1, max=14, step=1, initial=7)
         self.isolation_force_slider = Slider(self.screen, slider_start_x, slider_start_y + 5 * slider_spacing,
                                              300, 10, min=0.00, max=1.0, step=0.01, initial=0.0)
+        self.contact_density_slider = Slider(self.screen, slider_start_x, slider_start_y + 7 * slider_spacing,
+                                             300, 10, min=1, max=10, step=1, initial=5)
+
 
         # Button for starting the simulation
         # This button triggers the fetching of parameters and potentially starts the simulation.
-        self.start_simulation_button = Button(self.screen, 300, 520, 250, 50,
+        self.start_simulation_button = Button(self.screen, 300, 580, 250, 50,
                                               text='Start Simulation', fontSize=30, margin=5,
                                               inactiveColour=self.BUTTON_COLOR, pressedColour=(100, 255, 100),
                                               radius=20, onClick=self.fetch_parameters)
@@ -161,14 +167,14 @@ class VirusSimulationApp:
         """
         Toggles the network typology status among predefined types.
         """
-        if self.network_typology_status == "SMALL-WORLD":
-            self.network_typology_status = "RANDOM"
-        elif self.network_typology_status == "RANDOM":
-            self.network_typology_status = "SCALE-FREE"
+        if self.house_density == "LOW":
+            self.house_density = "MEDIUM"
+        elif self.house_density == "MEDIUM":
+            self.house_density = "HIGH"
         else:
-            self.network_typology_status = "SMALL-WORLD"
-        self.parameters['network_typology'] = self.network_typology_status
-        self.network_typology_btn.setText(self.network_typology_status)
+            self.house_density = "LOW"
+        self.parameters['house_density'] = self.house_density
+        self.network_typology_btn.setText(self.house_density)
 
     def fetch_parameters(self):
         """
@@ -189,7 +195,8 @@ class VirusSimulationApp:
         self.parameters['death_rate'] = self.death_rate_slider.getValue()
         self.parameters['recovery_days'] = self.recovery_days_slider.getValue()
         self.parameters['isolate_force'] = self.isolation_force_slider.getValue()
-        self.parameters['network_typology'] = self.network_typology_status
+        self.parameters['house_density'] = self.house_density
+        self.parameters['contact_density'] = self.contact_density_slider.getValue()
         pygame.quit()  # Close the Pygame window to proceed with the simulation
 
     def run_simulation(self):
@@ -204,7 +211,8 @@ class VirusSimulationApp:
         respective parameters.
         """
         self.fetch_parameters()
-        print("Simulation parameters:", self.parameters)
+        generate_graph(self.parameters)
+        # print("Simulation parameters:", self.parameters)
 
         # Creating instances of Virus and Policy with their respective parameters
         virus = Virus(
@@ -252,7 +260,7 @@ class VirusSimulationApp:
                     print(f"Clicked at: {mouse_pos}")  # Debugging: print the click position
 
                     # Check if the click is within the bounds of the 'Start Simulation' button
-                    if 303 <= mouse_pos[0] <= 548 and 521 <= mouse_pos[1] <= 568:
+                    if 303 <= mouse_pos[0] <= 548 and 580 <= mouse_pos[1] <= 600:
                         self.population_size = int(self.population_size_box.text) \
                             if self.population_size_box.text.isdigit() else 500
                         self.run_simulation()  # Fetch simulation parameters from the UI
@@ -279,6 +287,7 @@ class VirusSimulationApp:
             death_rate_output = str(round(self.death_rate_slider.getValue() * 100)) + "%"
             recovery_days_output = str(self.recovery_days_slider.getValue())
             isolation_force_output = str(round(self.isolation_force_slider.getValue() * 100)) + "%"
+            contact_density_output = str(self.contact_density_slider.getValue())
 
             labels_and_values = [
                 ('Population Size:', None),
@@ -288,7 +297,8 @@ class VirusSimulationApp:
                 ('Death Rate:', death_rate_output),
                 ('Recovery Days:', recovery_days_output),
                 ('Isolation Force:', isolation_force_output),
-                ('Network Typology:', None)
+                ('House Density:', None),
+                ('contact_density:', contact_density_output),
             ]
             for i, (label, value) in enumerate(labels_and_values):
                 self.draw_text(label, (50, 105 + 50 * i))
@@ -303,6 +313,7 @@ class VirusSimulationApp:
                 self.death_rate_slider,
                 self.recovery_days_slider,
                 self.isolation_force_slider,
+                self.contact_density_slider,
                 self.start_simulation_button
             ]
             for element in ui_elements:
