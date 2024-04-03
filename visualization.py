@@ -134,25 +134,25 @@ def initialize_edges(graph: nx.Graph, contact_density: int, isolation_force: flo
     new_edges = []
 
     for u in graph.nodes():
-        if graph.nodes[u]['status'] == 'dead' or graph.nodes[u]['status'] == 'infected' or graph.nodes[u]['status'] == 'incubated':
+        if graph.nodes[u]['status'] == 'dead':
             continue
         
         potential_connections = [v for v in graph.nodes() if
                                 u != v and 
-                                graph.nodes[u]['family'] != graph.nodes[v]['family'] and
-                                graph.nodes[v]['status'] not in ['dead', 'infected', 'incubated'] and
+                                graph.nodes[v]['status'] not in ['dead'] and
                                 not graph.has_edge(u, v)]
         
         new_contact_density = contact_density * (1 - isolation_force)
-        num_new_edges = min(int(generate_number_normally(new_contact_density, new_contact_density)[0]) - graph.degree(u), len(potential_connections))
+        num = min(int(generate_number_normally(new_contact_density, new_contact_density)[0]), 10)
+        num_new_edges = min(num - graph.degree(u), len(potential_connections))
 
         if num_new_edges > 0:
-            print("inside")
+            # print(num_new_edges)
             n_edges = random.sample(potential_connections, num_new_edges)
 
             for node in n_edges:
                 new_edges.append((u, node))
-                graph.add_edge(u, node, edge_color='black')
+                graph.add_edge(u, node, edge_color=(0,0,0,0.3))
     return new_edges    
 
 
@@ -217,6 +217,7 @@ def update_day(graph: nx.Graph, infection_rate: float, death_rate: float, recove
     graph.remove_edges_from(edges)
 
     new_edges = []
+    max_num = 0
 
     for u in graph.nodes():
         if graph.nodes[u]['status'] == 'dead':
@@ -224,22 +225,23 @@ def update_day(graph: nx.Graph, infection_rate: float, death_rate: float, recove
         
         # a list of nodes
         potential_connections = [v for v in graph.nodes() if
-                                u != v and 
-                                graph.nodes[u]['family'] != graph.nodes[v]['family'] and
-                                graph.nodes[v]['status'] not in ['dead'] and
-                                not graph.has_edge(u, v)]
+                                (v != u and 
+                                graph.nodes[v]['status'] != 'dead' and
+                                not graph.has_edge(u, v))]
         
         new_contact_density = contact_density * (1 - isolation_force)
         num = min(int(generate_number_normally(new_contact_density, new_contact_density)[0]), 10)
         num_new_edges = min(num - graph.degree(u), len(potential_connections))
 
         if num_new_edges > 0:
-            print("inside")
+            if num_new_edges > max_num:
+                max_num = num_new_edges
+                print(num_new_edges)
             n_edges = random.sample(potential_connections, num_new_edges)
-
+            print(potential_connections)
             for node in n_edges:
                 new_edges.append((u, node))
-                graph.add_edge(u, node, edge_color='black') 
+                graph.add_edge(u, node, edge_color=(0,0,0,0.3)) 
     return new_edges
     
 
@@ -288,7 +290,7 @@ def generate_graph(
     # Animation
     positions = nx.spring_layout(graph, scale=5, k = 1.0/(len(graph.nodes())**0.5), iterations=20, seed=42)
     edges = initialize_edges(graph, contact_density, isolate_force)
-    for day in range(1, 91):
+    for day in range(1, 101):
         ax.clear()
         fig.clf()
 
