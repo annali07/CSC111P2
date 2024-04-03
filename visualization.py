@@ -232,7 +232,6 @@ def update_day(graph: nx.Graph, infection_rate: float, death_rate: float, recove
 
         if num_new_edges > 0:
             n_edges = random.sample(potential_connections, num_new_edges)
-            print(potential_connections)
             for node in n_edges:
                 new_edges.append((u, node))
                 graph.add_edge(u, node, edge_color=(0,0,0,0.3)) 
