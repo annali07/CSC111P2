@@ -1,4 +1,4 @@
-from networkx_graph import generate_graph
+from tests.networkx_graph import generate_graph
 import pygame
 import sys
 import pygame_widgets
@@ -99,13 +99,8 @@ def create_initial_window() -> dict[str, int]:
         pygame.display.flip()
 
     pygame.quit()
-<<<<<<< Updated upstream
-    slider_value = int(slider.getValue() )
-    return {"txt": int(input_text), "value": slider_value}
-=======
     slider_value = slider.getValue()
     return {"txt": input_text, "value": slider_value}
->>>>>>> Stashed changes
 
 
 # init

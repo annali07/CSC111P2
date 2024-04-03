@@ -1,0 +1,4 @@
+1. Simulation Button Detect Area
+2. Graph suddenly closes
+
+
