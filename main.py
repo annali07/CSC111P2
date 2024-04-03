@@ -4,19 +4,17 @@ CSC111 Project 2: Virus Spread Simulation
 Lowest population = 10
 
 """
+import sys
+import random
+from typing_extensions import Any
 import pygame
 import pygame_widgets
 from pygame_widgets.slider import Slider
-from pygame_widgets.textbox import TextBox
 from pygame_widgets.button import Button
-import sys
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import networkx as nx
-import numpy as np
-import random
 from simulation import Virus, Person, Policy
 from visualization import generate_graph
+
 
 class InputBox:
     """
@@ -26,17 +24,26 @@ class InputBox:
     backspacing and displays the current text within a rectangular input field.
     """
 
-    def __init__(self, x: int, y: int, w: int, h: int, font, text: str = '') -> None:
+    font: pygame.font.Font
+    blue: tuple
+    black: tuple
+    rect: pygame.Rect
+    color: tuple
+    text: str
+    txt_surface: pygame.Surface
+    active: bool
+
+    def __init__(self, x: int, y: int, w: int, h: int, font: pygame.font.Font, text: str = '') -> None:
         self.font = font
-        self.BLUE = (148, 135, 199)
-        self.BLACK = (0, 0, 0)
+        self.blue = (148, 135, 199)
+        self.black = (0, 0, 0)
         self.rect = pygame.Rect(x, y, w, h)
-        self.color = self.BLACK
+        self.color = self.black
         self.text = text
         self.txt_surface = self.font.render(text, True, self.color)
         self.active = False
 
-    def handle_event(self, event):
+    def handle_event(self, event: pygame.event.Event) -> None:
         """
         Handles events related to the input box, such as mouse clicks and keyboard inputs.
 
@@ -48,7 +55,7 @@ class InputBox:
                 self.active = not self.active
             else:
                 self.active = False
-            self.color = self.BLUE if self.active else self.BLACK
+            self.color = self.blue if self.active else self.black
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
@@ -57,20 +64,21 @@ class InputBox:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
-                self.txt_surface = self.font.render(self.text, True, self.color)
+                self.txt_surface = self.font.render(
+                    self.text, True, self.color)
 
-    def update(self):
+    def update(self) -> None:
         """
         Updates the input box's width to fit the current text.
         """
-        width = max(200, self.txt_surface.get_width()+10)
+        width = max(200, self.txt_surface.get_width() + 10)
         self.rect.w = width
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         """
         Draws the input box and the current text on the specified screen.
         """
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
 
@@ -81,10 +89,22 @@ class VirusSimulationApp:
     screen: pygame.Surface
     clock: pygame.time.Clock
     font: pygame.font.Font
-    WHITE: tuple[int, int, int]
-    BUTTON_COLOR: tuple[int, int, int]
+    white: tuple[int, int, int]
+    button_color: tuple[int, int, int]
     house_density: str
-    parameters: dict[str, any]
+    parameters: dict[str, Any]
+    population_size: int
+    population_size_box: InputBox
+    input_text: str
+    network_typology_btn: Button
+    initial_infected_count_slider: Slider
+    infection_rate_slider: Slider
+    incubation_period_slider: Slider
+    death_rate_slider: Slider
+    recovery_days_slider: Slider
+    isolation_force_slider: Slider
+    contact_density_slider: Slider
+    start_simulation_button: Button
 
     def __init__(self) -> None:
         pygame.init()
@@ -92,13 +112,13 @@ class VirusSimulationApp:
         pygame.display.set_caption("Virus Spread Simulation")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30)
-        self.WHITE = (255, 255, 255)
-        self.BUTTON_COLOR = (0, 120, 150)
+        self.white = (255, 255, 255)
+        self.button_color = (0, 120, 150)
         self.house_density = "MEDIUM"
         self.parameters = self.default_parameters()
         self.setup_ui_elements()
 
-    def default_parameters(self) -> dict[str, any]:
+    def default_parameters(self) -> dict[str, Any]:
         """
         Defines the default parameters for the simulation.
 
@@ -117,7 +137,7 @@ class VirusSimulationApp:
             'contact_density': 5
         }
 
-    def setup_ui_elements(self):
+    def setup_ui_elements(self) -> None:
         """
         Sets up the user interface elements for the simulation.
         """
@@ -129,14 +149,15 @@ class VirusSimulationApp:
         # Input Box for population size
         # This creates an input box for users to enter the population size, positioned at the top.
         self.population_size = 500
-        self.population_size_box = InputBox(slider_start_x, 97, 200, 40, self.font)
+        self.population_size_box = InputBox(
+            slider_start_x, 97, 200, 40, self.font)
         self.input_text = ''     # Variable to store the input text from the user
 
         # Button for changing network topology
         # Allows users to cycle through network topology types( SMALL-WORLD / RANDOM / SCALE-FREE ).
         self.network_typology_btn = Button(self.screen, slider_start_x, 448, 200, 40,
                                            text=f'{self.house_density}', fontSize=22, margin=20,
-                                           inactiveColour=self.BUTTON_COLOR, pressedColour=(0, 180, 180), radius=20)
+                                           inactiveColour=self.button_color, pressedColour=(0, 180, 180), radius=20)
 
         # Sliders for simulation parameters
         # Allow users to adjust various simulation parameters such as the initial infected count, infection rate, etc.
@@ -155,15 +176,15 @@ class VirusSimulationApp:
         self.contact_density_slider = Slider(self.screen, slider_start_x, slider_start_y + 7 * slider_spacing,
                                              300, 10, min=1, max=10, step=1, initial=5)
 
-
         # Button for starting the simulation
         # This button triggers the fetching of parameters and potentially starts the simulation.
         self.start_simulation_button = Button(self.screen, 300, 580, 250, 50,
                                               text='Start Simulation', fontSize=30, margin=5,
-                                              inactiveColour=self.BUTTON_COLOR, pressedColour=(100, 255, 100),
+                                              inactiveColour=self.button_color, pressedColour=(
+                                                  100, 255, 100),
                                               radius=20, onClick=self.fetch_parameters)
 
-    def toggle_network_typology(self):
+    def toggle_network_typology(self) -> None:
         """
         Toggles the network typology status among predefined types.
         """
@@ -176,7 +197,7 @@ class VirusSimulationApp:
         self.parameters['house_density'] = self.house_density
         self.network_typology_btn.setText(self.house_density)
 
-    def fetch_parameters(self):
+    def fetch_parameters(self) -> None:
         """
         Fetches simulation parameters from various UI elements and updates the global `parameters` dictionary.
 
@@ -199,7 +220,7 @@ class VirusSimulationApp:
         self.parameters['contact_density'] = self.contact_density_slider.getValue()
         pygame.quit()  # Close the Pygame window to proceed with the simulation
 
-    def run_simulation(self):
+    def run_simulation(self) -> "Simulation":
         """
         Initializes and runs the simulation based on the current configuration.
 
@@ -232,7 +253,7 @@ class VirusSimulationApp:
             policy=policy
         )
 
-        # sim.run()
+        return sim
 
     def draw_text(self, text: str, position: tuple[int, int], color: tuple[int, int, int] = (0, 0, 0)) -> None:
         """
@@ -257,7 +278,8 @@ class VirusSimulationApp:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     # Handle mouse button down events
                     mouse_pos = event.pos  # Get the position of the mouse click
-                    print(f"Clicked at: {mouse_pos}")  # Debugging: print the click position
+                    # Debugging: print the click position
+                    print(f"Clicked at: {mouse_pos}")
 
                     # Check if the click is within the bounds of the 'Start Simulation' button
                     if 303 <= mouse_pos[0] <= 548 and 580 <= mouse_pos[1] <= 600:
@@ -279,15 +301,21 @@ class VirusSimulationApp:
                 break
 
             # Clear the screen with a white background
-            self.screen.fill(self.WHITE)
+            self.screen.fill(self.white)
             # Fetch and format the current values from sliders
-            initial_infected_count_output = str(self.initial_infected_count_slider.getValue())
-            infection_rate_output = str(round(self.infection_rate_slider.getValue() * 100)) + "%"
-            incubation_period_output = str(self.incubation_period_slider.getValue())
-            death_rate_output = str(round(self.death_rate_slider.getValue() * 100)) + "%"
+            initial_infected_count_output = str(
+                self.initial_infected_count_slider.getValue())
+            infection_rate_output = str(
+                round(self.infection_rate_slider.getValue() * 100)) + "%"
+            incubation_period_output = str(
+                self.incubation_period_slider.getValue())
+            death_rate_output = str(
+                round(self.death_rate_slider.getValue() * 100)) + "%"
             recovery_days_output = str(self.recovery_days_slider.getValue())
-            isolation_force_output = str(round(self.isolation_force_slider.getValue() * 100)) + "%"
-            contact_density_output = str(self.contact_density_slider.getValue())
+            isolation_force_output = str(
+                round(self.isolation_force_slider.getValue() * 100)) + "%"
+            contact_density_output = str(
+                self.contact_density_slider.getValue())
 
             labels_and_values = [
                 ('Population Size:', None),
@@ -330,6 +358,9 @@ class VirusSimulationApp:
         pygame.quit()
 
     def get_parameters(self) -> dict:
+        """
+        returns the parameters of current simulation
+        """
         return self.parameters
 
 
@@ -345,9 +376,15 @@ class Simulation:
         policy (Policy): An instance of the Policy class, representing the policy to be applied during the simulation.
     """
 
+    population_size: int
+    graph: nx.Graph
+    persons: set[Person]
+    virus: Virus
+    policy: Policy
+
     def __init__(self, population_size: int, initial_infected_count: int, virus: Virus, policy: Policy) -> None:
         self.population_size = population_size
-        self.G = nx.Graph()
+        self.graph = nx.Graph()
         self.persons = {i: Person() for i in range(population_size)}
         self.virus = virus
         self.policy = policy
@@ -358,7 +395,8 @@ class Simulation:
         """
         Randomly selects a subset of the population to be initially infected with the virus.
         """
-        infected_ids = random.sample(list(self.persons.keys()), initial_infected_count)
+        infected_ids = random.sample(
+            list(self.persons.keys()), initial_infected_count)
         for i in infected_ids:
             self.persons[i].status = "incubation"
 
@@ -366,7 +404,7 @@ class Simulation:
         """
         Creates connections between individuals in the population to simulate their interactions.
         """
-        pass
+        return NotImplemented
 
     def spread_virus(self) -> None:
         """
@@ -374,7 +412,7 @@ class Simulation:
         """
         for person_id, person in self.persons.items():
             if person.status in ["incubation", "infected"]:
-                for neighbor_id in self.G.neighbors(person_id):
+                for neighbor_id in self.graph.neighbors(person_id):
                     neighbor = self.persons[neighbor_id]
                     if neighbor.status == "uninfected" and random.random() < self.virus.infection_rate:
                         neighbor.status = "incubation"
@@ -390,27 +428,27 @@ class Simulation:
         """
         Applies the defined policy (e.g., isolation) to mitigate the spread of the virus within the population.
         """
-        pass
-
+        return NotImplemented
 
 
 if __name__ == "__main__":
 
     import python_ta
-    check_python_ta = False
+    check_python_ta = True
     if check_python_ta:
         python_ta.check_all(config={
             'max-line-length': 120,
             'extra-imports': ["pygame", "pygame_widgets", "sys"
                             "matplotlib", "numpy", "networkx"
-                            "pygame_widgets.slider", "pygame_widgets.textbox"
-                            "pygame_widgets.button", ],  # the names (strs) of imported modules
-            'allowed-io': [],     # the names (strs) of functions that call print/open/input
+                              "pygame_widgets.slider", "pygame_widgets.textbox"
+                              "pygame_widgets.button", ],  # the names (strs) of imported modules
+            # the names (strs) of functions that call print/open/input
+            'allowed-io': [],
             # 'disabled': ["E9999"]
         })
 
     app = VirusSimulationApp()
     app.main_game_loop()
-    parameters = app.get_parameters()
-    print(parameters)
-    print("Y")
+    # parameters = app.get_parameters()
+    # print(parameters)
+    # print("Y")
