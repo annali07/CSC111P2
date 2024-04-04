@@ -59,7 +59,7 @@ class InputBox:
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
-                    print(self.text)
+                    pass
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
@@ -279,7 +279,7 @@ class VirusSimulationApp:
                     # Handle mouse button down events
                     mouse_pos = event.pos  # Get the position of the mouse click
                     # Debugging: print the click position
-                    print(f"Clicked at: {mouse_pos}")
+                    # print(f"Clicked at: {mouse_pos}")
 
                     # Check if the click is within the bounds of the 'Start Simulation' button
                     if 303 <= mouse_pos[0] <= 548 and 580 <= mouse_pos[1] <= 600:
@@ -434,7 +434,7 @@ class Simulation:
 if __name__ == "__main__":
 
     import python_ta
-    check_python_ta = False
+    check_python_ta = True
     if check_python_ta:
         python_ta.check_all(config={
             'max-line-length': 120,
