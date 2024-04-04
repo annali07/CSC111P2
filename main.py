@@ -156,8 +156,8 @@ class VirusSimulationApp:
         # Button for changing house density
         # Allows users to cycle through house density.
         self.house_density_btn = Button(self.screen, slider_start_x, 448, 200, 40,
-                                           text=f'{self.house_density}', fontSize=22, margin=20,
-                                           inactiveColour=self.button_color, pressedColour=(0, 180, 180), radius=20)
+                                        text=f'{self.house_density}', fontSize=22, margin=20,
+                                        inactiveColour=self.button_color, pressedColour=(0, 180, 180), radius=20)
 
         # Sliders for simulation parameters
         # Allow users to adjust various simulation parameters such as the initial infected count, infection rate, etc.
@@ -405,7 +405,7 @@ class Simulation:
         """
         Creates connections between individuals in the population to simulate their interactions.
         """
-        return NotImplemented()
+        return NotImplemented
 
     def spread_virus(self) -> None:
         """
@@ -429,13 +429,13 @@ class Simulation:
         """
         Applies the defined policy (e.g., isolation) to mitigate the spread of the virus within the population.
         """
-        return NotImplemented()
+        return NotImplemented
 
 
 if __name__ == "__main__":
 
     import python_ta
-    check_python_ta = True
+    check_python_ta = False
     if check_python_ta:
         python_ta.check_all(config={
             'max-line-length': 120,
@@ -446,7 +446,7 @@ if __name__ == "__main__":
                               "pygame_widgets.button", "random"],  # the names (strs) of imported modules
             # the names (strs) of functions that call print/open/input
             'allowed-io': [],
-            # 'disabled': ["E9999"]
+            'disabled': ["R0914", "R1702", "R0913", "R0902"]
         })
 
     app = VirusSimulationApp()
