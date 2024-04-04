@@ -434,14 +434,15 @@ class Simulation:
 if __name__ == "__main__":
 
     import python_ta
-    check_python_ta = True
+    check_python_ta = False
     if check_python_ta:
         python_ta.check_all(config={
             'max-line-length': 120,
-            'extra-imports': ["pygame", "pygame_widgets", "sys"
-                            "matplotlib", "numpy", "networkx"
-                              "pygame_widgets.slider", "pygame_widgets.textbox"
-                              "pygame_widgets.button", ],  # the names (strs) of imported modules
+            'extra-imports': ["pygame", "pygame_widgets", "sys",
+                            "matplotlib", "numpy", "networkx",
+                              "pygame_widgets.slider", "pygame_widgets.textbox",
+                              "typing_extensions", "simulation", "visualization",
+                              "pygame_widgets.button", "random"],  # the names (strs) of imported modules
             # the names (strs) of functions that call print/open/input
             'allowed-io': [],
             # 'disabled': ["E9999"]
