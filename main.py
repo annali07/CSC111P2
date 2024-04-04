@@ -96,7 +96,7 @@ class VirusSimulationApp:
     population_size: int
     population_size_box: InputBox
     input_text: str
-    network_typology_btn: Button
+    house_density_btn: Button
     initial_infected_count_slider: Slider
     infection_rate_slider: Slider
     incubation_period_slider: Slider
@@ -108,7 +108,7 @@ class VirusSimulationApp:
 
     def __init__(self) -> None:
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 650))
+        self.screen = pygame.display.set_mode((800, 700))
         pygame.display.set_caption("Virus Spread Simulation")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30)
@@ -153,9 +153,9 @@ class VirusSimulationApp:
             slider_start_x, 97, 200, 40, self.font)
         self.input_text = ''     # Variable to store the input text from the user
 
-        # Button for changing network topology
-        # Allows users to cycle through network topology types( SMALL-WORLD / RANDOM / SCALE-FREE ).
-        self.network_typology_btn = Button(self.screen, slider_start_x, 448, 200, 40,
+        # Button for changing house density
+        # Allows users to cycle through house density.
+        self.house_density_btn = Button(self.screen, slider_start_x, 448, 200, 40,
                                            text=f'{self.house_density}', fontSize=22, margin=20,
                                            inactiveColour=self.button_color, pressedColour=(0, 180, 180), radius=20)
 
@@ -184,9 +184,9 @@ class VirusSimulationApp:
                                                   100, 255, 100),
                                               radius=20, onClick=self.fetch_parameters)
 
-    def toggle_network_typology(self) -> None:
+    def toggle_house_density(self) -> None:
         """
-        Toggles the network typology status among predefined types.
+        Toggles the house density status among predefined types.
         """
         if self.house_density == "LOW":
             self.house_density = "MEDIUM"
@@ -195,14 +195,14 @@ class VirusSimulationApp:
         else:
             self.house_density = "LOW"
         self.parameters['house_density'] = self.house_density
-        self.network_typology_btn.setText(self.house_density)
+        self.house_density_btn.setText(self.house_density)
 
     def fetch_parameters(self) -> None:
         """
         Fetches simulation parameters from various UI elements and updates the global `parameters` dictionary.
 
         This function gathers user-defined values for the population size, initial infected count, infection rate,
-        incubation period, death rate, recovery days, isolation force, and network topology status from corresponding
+        incubation period, death rate, recovery days, isolation force, and house density status from corresponding
         UI sliders and status indicators. These values are used to configure the simulation environment.
 
         After collecting and updating these parameters, it prints the updated `parameters` dictionary for debugging,
@@ -232,8 +232,9 @@ class VirusSimulationApp:
         respective parameters.
         """
         self.fetch_parameters()
-        generate_graph(self.parameters)
         # print("Simulation parameters:", self.parameters)
+
+        generate_graph(self.parameters)
 
         # Creating instances of Virus and Policy with their respective parameters
         virus = Virus(
@@ -282,7 +283,7 @@ class VirusSimulationApp:
                     print(f"Clicked at: {mouse_pos}")
 
                     # Check if the click is within the bounds of the 'Start Simulation' button
-                    if 303 <= mouse_pos[0] <= 548 and 580 <= mouse_pos[1] <= 600:
+                    if 300 <= mouse_pos[0] <= 540 and 580 <= mouse_pos[1] <= 630:
                         self.population_size = int(self.population_size_box.text) \
                             if self.population_size_box.text.isdigit() else 500
                         self.run_simulation()  # Fetch simulation parameters from the UI
@@ -290,10 +291,10 @@ class VirusSimulationApp:
                         running = False
                         break
 
-                    # Check if the click is within the bounds of the 'Change Network Typology' button
+                    # Check if the click is within the bounds of the 'House Density' button
                     elif 327 <= mouse_pos[0] <= 524 and 450 <= mouse_pos[1] <= 486:
-                        # Rotate through network topology statuses
-                        self.toggle_network_typology()
+                        # Rotate through house density
+                        self.toggle_house_density()
 
                 self.population_size_box.handle_event(event)
 
@@ -326,7 +327,7 @@ class VirusSimulationApp:
                 ('Recovery Days:', recovery_days_output),
                 ('Isolation Force:', isolation_force_output),
                 ('House Density:', None),
-                ('contact_density:', contact_density_output),
+                ('Contact Density:', contact_density_output),
             ]
             for i, (label, value) in enumerate(labels_and_values):
                 self.draw_text(label, (50, 105 + 50 * i))
@@ -378,7 +379,7 @@ class Simulation:
 
     population_size: int
     graph: nx.Graph
-    persons: set[Person]
+    persons: dict[int, Person]
     virus: Virus
     policy: Policy
 
@@ -404,7 +405,7 @@ class Simulation:
         """
         Creates connections between individuals in the population to simulate their interactions.
         """
-        return NotImplemented
+        return NotImplemented()
 
     def spread_virus(self) -> None:
         """
@@ -428,7 +429,7 @@ class Simulation:
         """
         Applies the defined policy (e.g., isolation) to mitigate the spread of the virus within the population.
         """
-        return NotImplemented
+        return NotImplemented()
 
 
 if __name__ == "__main__":
