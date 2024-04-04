@@ -1,10 +1,11 @@
+"""
+The purpose of this document is to outline possible further enhancement for encapsulating
+data needed to run the simulation. This way, faster and more efficient comparisons can be
+made when studying specific virus and policies proposed by governments.
+"""
+
 from __future__ import annotations
 import random
-import pygame
-import pygame_widgets
-from pygame_widgets.slider import Slider
-from pygame_widgets.textbox import TextBox
-import sys
 
 
 class Virus:
@@ -12,11 +13,20 @@ class Virus:
     Represents a virus in a simulation of an infectious disease outbreak.
 
     Attributes:
-        incubation_period (int): The period in days between exposure to the virus and the onset of symptoms.
-        infection_rate (float): The probability of the virus being transmitted between two connected individuals per day.
-        death_rate (float): The probability of an infected individual dying from the virus once the recovery period has passed.
-        recovery_days (int): The number of days it takes for an infected individual to either recover or die from the virus.
+        incubation_period (int): The period in days between exposure to the virus
+            and the onset of symptoms.
+        infection_rate (float): The probability of the virus being transmitted
+            between two connected individuals per day.
+        death_rate (float): The probability of an infected individual dying from
+            the virus once the recovery period has passed.
+        recovery_days (int): The number of days it takes for an infected individual
+            to either recover or die from the virus.
     """
+
+    incubation_period: int
+    infection_rate: float
+    death_rate: float
+    recovery_days: int
 
     def __init__(self, incubation_period: int, infection_rate: float, death_rate: float, recovery_days: int) -> None:
         self.incubation_period = incubation_period
@@ -38,6 +48,10 @@ class Person:
                              incubation and infectious periods.
     """
 
+    status: str
+    days_infected: int
+    relationship: set
+
     def __init__(self) -> None:
         self.status = "uninfected"  # Initial health status is 'uninfected'
         self.days_infected = 0      # Initially, the individual has not been infected
@@ -50,12 +64,15 @@ class Person:
         """
         # Ensure the connection is bidirectional and doesn't duplicate
         if other_person not in self.relationship:
-            self.relationship.add(other_person)  # Adding a connection from this person to the other
-            other_person.relationship.add(self)  # Ensuring the connection is reciprocal
+            # Adding a connection from this person to the other
+            self.relationship.add(other_person)
+            # Ensuring the connection is reciprocal
+            other_person.relationship.add(self)
 
     def update_status(self, virus: 'Virus') -> None:
         """
-        Updates the individual's health status based on the current status, virus characteristics, and the passage of time.
+        Updates the individual's health status based on the current status, virus 
+        characteristics, and the passage of time.
         """
         if self.status == "incubation":
             self.days_infected += 1
@@ -85,11 +102,30 @@ class Policy:
         isolate_force (float): A measure of the stringency and effectiveness of isolation policies.
     """
 
+    isolate_force: float
+
     def __init__(self, isolate_force: float) -> None:
         self.isolate_force = isolate_force
 
-    def enforce_policy(self):
+    def enforce_policy(self) -> None:
         """
         Applies the policy's effects to the simulation.
         """
-        pass
+        return NotImplemented
+
+
+if __name__ == "__main__":
+
+    import python_ta
+    check_python_ta = False
+    if check_python_ta:
+        python_ta.check_all(config={
+            'max-line-length': 120,
+            'extra-imports': ["pygame", "pygame_widgets", "sys",
+                            "matplotlib", "numpy", "networkx",
+                              "pygame_widgets.slider", "pygame_widgets.textbox",
+                              "typing_extensions", "simulation", "visualization",
+                              "pygame_widgets.button", "random"],  # the names (strs) of imported modules
+            'allowed-io': [],
+            # 'disabled': ["E9999"]
+        })
